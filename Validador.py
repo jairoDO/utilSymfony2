@@ -1,6 +1,6 @@
 # -*- coding: utf-8 *-*
 import getopt
-
+import os
 class ValidadorGenerico():
 	def __init__(self, obligatorias=[], opcionales=[],banderas=[]):
 		self.error = False
@@ -15,6 +15,9 @@ class ValidadorGenerico():
 		self.opcionesConGuion = set([ '--' + str(x) for x in self.opciones])
 		self.opcionesParciadas = dict()
 		self.parseado = False
+
+	def getOpcion(self,key,default=''):
+		return self.opcionesParciadas.get(key,default)
 
 	def setOpciones(self,obligatorias,opcionales,banderas):
 		self.parseado = False
@@ -31,6 +34,7 @@ class ValidadorGenerico():
 		result = dict()
 		for item in self.opcionesParciadas:
 			result[item[0][2:]] = item[1]
+		self.opcionesParciadas = result
 		return result
 
 	def estanConValores(self,argTuple):
@@ -57,7 +61,6 @@ class ValidadorGenerico():
 		elif not (set(opts).issuperset(self.obligatoriasConGuion)):
 			self.error = True
 			diferencias = [str(x) for x in self.obligatoriasConGuion.difference(set(opts))]
-			import pdb;pdb.set_trace()
 			self.mensajes.append('Le faltan los siguientes campos obligatorios:%s' %  (','.join(diferencias)) )
 			return False
 		elif not set(opts).issuperset(self.banderasConGuion):
@@ -71,15 +74,20 @@ class ValidadorGenerico():
 	def validar(self):
 		pass
 
-class ValidadorEntradaTwig(ValidadorGenerico):
+class ValidadorEntradaArchivo(ValidadorGenerico):
 	"""docstring for ClassName"""
 	def __init__(self):
 		opcionesObligatorias = ['file']
-		super(ClassName, self).__init__(opcionesObligatorias)
+		ValidadorGenerico.__init__(self, opcionesObligatorias)
 
-	# def validar(self,argv):
-	# 	if  self.parametrosCorrectos():
-	# 		if argv[1]
-	# 	else:
-	# 		return False
-		
+
+	def validar(self,argv):
+	 	if  self.sonParametrosCorrectos(argv):
+	 		self.getOpcionesParsiadas()
+	 		if os.path.exists(self.getOpcion('file')):
+	 			return True
+ 			else:
+ 				self.mensajes.append('No existe el archivo %s' % self.getOpcion('file'))
+	 	else:
+	 		return False
+	 	

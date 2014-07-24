@@ -63,6 +63,10 @@ class Parseador():
 		else:
 			self.file = None
 
+	def agregarProcesador(self,procesador):
+		if (isinstance(procesador, ProcesadorGenerico)):
+			self.procesadores.append(procesador)
+
 	def getNameSpace(self,string):
 		patron = re.compile('namespace(\s+)(.+);', re.DOTALL )
 		namespace = patron.search(string)
@@ -90,9 +94,9 @@ class Parseador():
 
 		return listaAtributos
 
-	def setFile(self, File):
-		if type(File) is file:
-			self.file = File
+	def setFile(self, Files):
+		if type(Files) is file:
+			self.file = Files
 			self.fileString = self.file.read()
 
 	def setFileExsist(self, name_file):

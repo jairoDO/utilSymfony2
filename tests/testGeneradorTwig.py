@@ -1,5 +1,8 @@
 import unittest
 import os
+import sys
+
+sys.path.append('../')
 from GeneradorTwig import *
 from Atributo import Atributo
 #from ImpresorTwig import ImpresorTwig

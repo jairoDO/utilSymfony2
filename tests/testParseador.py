@@ -1,9 +1,12 @@
 import unittest
 import os
+import sys
+
+sys.path.append('../')
 from Parseador import Parseador, ProcesadorTipo
 from Atributo import Atributo
 
-class TddGenerarHtmlForm(unittest.TestCase):
+class TddParseador(unittest.TestCase):
 
 	def setUp(self):
 		self.parseador = Parseador()
@@ -15,9 +18,10 @@ class TddGenerarHtmlForm(unittest.TestCase):
 		self.assertTrue(self.parseador.getFile() is None)
 
 	def test_parsear_archivo_valido(self):
-		File = open('prueba.php','wr')
-		self.parseador.setFile(File)
-		self.assertTrue(type(self.parseador.getFile()) is file)
+		Files = open('prueba.php','w+b')
+		Files.write('hola Mundo')
+		self.parseador.setFile(Files)
+		self.assertTrue(isinstance(self.parseador.getFile(),file))
 
 	def test_parsear_un_atributo(self):
 		string = "\tprivate $argumento1;"
@@ -100,33 +104,37 @@ class TddGenerarHtmlForm(unittest.TestCase):
 
 		self.failUnlessEqual(['aval','id'], self.parseador.crearDictAnotaciones(string).keys())
 
-############################################ Test para los procesadores ###############################################################
-	def test_procesador_tipo_bien(self):
-		anotacion = '/**\n\tcolumn(type="integer")**/'
-		procesador = ProcesadorTipo()
-		self.failUnlessEqual("integer", procesador.procesar(anotacion))
+	def test_getNameSpace_correcto_una_linea(self):
+		self.failUnlessEqual('gse\appBundle\Entity\certificad', self.parseador.getNameSpace("namespace gse\appBundle\Entity\certificad;"))
 
-	def test_procesador_tipo_sin_matchear(self):
-		anotacion = '/**\n\tcolumn()**/'
-		procesador = ProcesadorTipo()
-		self.failUnlessEqual(False , procesador.procesar(anotacion))
+	def test_getNameSpace_correcto_multiple_linea(self):
+		string = """
+		<?php
 
-	def test_procesador_tipo_con_basura(self):
-		anotacion = """ /**
-					     * @var string
-					     *
-					     * @ORM\Column(name="presentacion", type="text", nullable=true)
-					     * @Assert\NotBlank(groups={"generales", "generales_noForm", "edicion_completa"})
-					     */
-					     """
-		procesador = ProcesadorTipo()
-		self.failUnlessEqual("text" , procesador.procesar(anotacion))
+		namespace Gse\Campus2Bundle\Entity\Certificado;
 
-	def test_procesar_atributo_con_tipo(self):
-		atributo = Atributo('argument1','/**\n\tcolumn(type="integer")**/')
-		self.parseador.procesarAtributo(atributo)
+		use Doctrine\ORM\Mapping as ORM;
+		use Symfony\Component\Validator\Constraints as Assert;
+		"""
+		self.failUnlessEqual('Gse\Campus2Bundle\Entity\Certificado', self.parseador.getNameSpace(string))
 
-		self.failUnlessEqual('integer', atributo.propiedades['tipo'])
+	def test_getDirectorio_bien(self):
+		string = "Gse\AppBundle\Entity\Certificado"
+		self.failUnlessEqual('Certificado',self.parseador.getDirectorio(string))
+
+
+	def test_getDirectorio_base(self):
+		string = "Gse\AppBundle\Entity"
+		self.failUnlessEqual('',self.parseador.getDirectorio(string))
+
+	def test_capitalizar_con_espacio_una_palabra(self):
+		string = "alto"
+		self.failUnlessEqual('Alto',self.parseador.capitalizarConEspacios(string))
+
+	def test_capitalizar_con_espacio_dos_palabra(self):
+		string = "AltoBaile"
+		self.failUnlessEqual('Alto Baile',self.parseador.capitalizarConEspacios(string))
+
 
 	def tearDown(self):
 		if os.path.exists('prueba.php'):
