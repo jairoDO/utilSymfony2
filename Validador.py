@@ -4,6 +4,7 @@ import os
 class ValidadorGenerico():
 	def __init__(self, obligatorias=[], opcionales=[],banderas=[]):
 		self.error = False
+		self.optsTuple = None
 		self.mensajes = []
 		self.obligatorias = set(obligatorias)
 		self.obligatoriasConGuion = set(['--'+ str(x) for x in self.obligatorias])			
@@ -32,7 +33,7 @@ class ValidadorGenerico():
 
 	def getOpcionesParsiadas(self):
 		result = dict()
-		for item in self.opcionesParciadas:
+		for item in self.optsTuple:
 			result[item[0][2:]] = item[1]
 		self.opcionesParciadas = result
 		return result
@@ -48,6 +49,7 @@ class ValidadorGenerico():
 	def sonParametrosCorrectos(self,argv):
 		try:
 			optsTuple, args = getopt.getopt(argv , '' , [str(x) + '=' for x in self.opciones] + [str(x) for x in self.banderas])
+			self.optsTuple 
 		except:
 			self.error = True
 			self.mensajes.append('Existen opciones no válidas')
@@ -68,7 +70,6 @@ class ValidadorGenerico():
 			diferencias = [str(x) for x in self.banderas.difference(set(args))]
 			self.mensajes.append('La siguientes banderas no son valídas: %s' % (','.join(diferencias)))
 		elif set(opts).issubset(self.opcionesConGuion.union(self.banderasConGuion)):
-			self.opcionesParciadas = optsTuple
 			return self.estanConValores(optsTuple)
 
 	def validar(self):

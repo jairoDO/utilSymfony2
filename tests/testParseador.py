@@ -3,13 +3,26 @@ import os
 import sys
 
 sys.path.append('../')
-from Parseador import Parseador, ProcesadorTipo
+from Parseador import Parseador, ProcesadorTipo, ProcesadorGenerico
 from Atributo import Atributo
 
 class TddParseador(unittest.TestCase):
 
 	def setUp(self):
 		self.parseador = Parseador()
+
+	def test_agregar_procesador_valido(self):
+		cantidadProcesadores = len(self.parseador.procesadores)
+		self.parseador.agregarProcesador(ProcesadorGenerico('','generica'))
+		self.assertTrue(len(self.parseador.procesadores) == cantidadProcesadores + 1)
+		self.parseador.procesadores.pop()
+
+	def test_agregar_procesador_invalido(self):
+		cantidadProcesadores = len(self.parseador.procesadores)
+
+		self.parseador.agregarProcesador(Atributo('sinImportancia')) # le paso cualquier clase	
+		self.assertTrue(len(self.parseador.procesadores) == cantidadProcesadores)
+
 
 	def test_parsear_archivo_invalido(self):
 		nameFile = "invalido"

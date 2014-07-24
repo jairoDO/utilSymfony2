@@ -76,6 +76,8 @@ class Parseador():
 		return string.split('Entity')[-1].replace('\\','')
 		
 	def getAtributosProcesados(self):
+		""" Devuelve una lista con los atributos que se encuentrar en el archivo, procesados, y aplicadando cada procesador
+		"""
 		fileString = self.fileString
 		listaDeAtributosCrudos = self.parsearAtributos(fileString)
 		listaDeAtributosAnotaciones = self.crearDictAnotaciones(fileString)
@@ -115,13 +117,17 @@ class Parseador():
 		return self.atributos
 
 	def parsearAtributos(self, string):
+		""" devuelve todos los atributos que tiene una entidad sea o no con anotaciones
+		"""
 		patron = re.compile("(private|protected|public){1}(\s+)\$(.+);(\s*|\n+)*|cons\s(.+)\s=\s(.+);")
 		result = []
 		for x in patron.finditer(string):
 			result.append(x.group(3))
 		return result
 
-	def crearDictAnotacionesRecusivo(self, string, dicAnotaciones):
+	def crearDictAnotacionesRecursivo(self, string, dicAnotaciones):
+			""" crea un diccionario con los atributos qeu tienen anotaciones 
+			"""
 			comienzo = string.find('/**')
 
 			if comienzo == -1:
@@ -138,11 +144,13 @@ class Parseador():
 					lineaProcesada = self.parsearAtributos(linea)
 					if len(lineaProcesada) > 0:
 						dicAnotaciones[lineaProcesada[0]] = anotacion
-					self.crearDictAnotacionesRecusivo(string[finAnotacion+len(linea):],dicAnotaciones)
+					self.crearDictAnotacionesRecursivo(string[finAnotacion+len(linea):],dicAnotaciones)
 	
 	def crearDictAnotaciones(self, string):
+		""" crea y devuelve un diccionario donde cada key es un atributo y el valor su anotacion
+		"""
 		dicts = {}
-		self.crearDictAnotacionesRecusivo(string,dicts)
+		self.crearDictAnotacionesRecursivo(string,dicts)
 		#import pdb;pdb.set_trace()
 		return dicts
 
@@ -157,6 +165,8 @@ class Parseador():
 		return result
 
 	def procesarAtributo(self, atributo):
+		"""Procesa un atributo segun su anotacion, es decir por cada procesador aplica el macheo y agrega su propiedad
+		"""
 		for procesador in self.procesadores:
 			if procesador.machea(atributo.anotacion):
 				atributo.propiedades[procesador.propiedad] = procesador.devolverProcesado()
@@ -169,7 +179,3 @@ class Parseador():
 			else :
 				result += caracter
 		return result.title()
-
-	def generarTwigText(self,atributo):
-		result =""
-		return ""
