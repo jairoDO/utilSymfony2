@@ -72,6 +72,13 @@ class Parseador():
 		namespace = patron.search(string)
 		return namespace.group(2).split(';')[0]
 
+	def getClase(self,texto):
+		patronClass = re.compile("(.+)?class(\s)(.+)")
+		clas =  patronClass.search(texto)
+		clase =  clas.group(3)
+		return clase
+
+
 	def getDirectorio(self,string):
 		return string.split('Entity')[-1].replace('\\','')
 		
@@ -82,6 +89,11 @@ class Parseador():
 		listaDeAtributosCrudos = self.parsearAtributos(fileString)
 		listaDeAtributosAnotaciones = self.crearDictAnotaciones(fileString)
 		listaAtributos = []
+		namespace = self.getNameSpace(fileString)
+		info = dict()
+		info['clase'] = self.getClase(fileString).strip()
+		info['pathTraductor'] =  '.'.join(self.getDirectorio(namespace).split('//')) + 'form.label'
+
 		for nombre , anotacion in listaDeAtributosAnotaciones.items():
 			splitIGual = nombre.split("=")
 			if len(splitIGual) > 1:
@@ -91,7 +103,7 @@ class Parseador():
 				atributo.propiedades['default'] = valorDefault
 			else:
 				atributo = Atributo(nombre, anotacion)
-			self.procesarAtributo(atributo)
+			self.procesarAtributo(atributo, info)
 			listaAtributos.append(atributo)
 
 		return listaAtributos
@@ -164,12 +176,14 @@ class Parseador():
 		#import pdb; pdb.set_trace()
 		return result
 
-	def procesarAtributo(self, atributo):
+	def procesarAtributo(self, atributo, info):
 		"""Procesa un atributo segun su anotacion, es decir por cada procesador aplica el macheo y agrega su propiedad
 		"""
 		for procesador in self.procesadores:
 			if procesador.machea(atributo.anotacion):
 				atributo.propiedades[procesador.propiedad] = procesador.devolverProcesado()
+				atributo.propiedades['pathTraductor'] = '.'.join([info['clase'], info['pathTraductor']])
+				atributo.propiedades['archivo'] = info['clase']
 
 	def capitalizarConEspacios(self,string):
 		result = ''

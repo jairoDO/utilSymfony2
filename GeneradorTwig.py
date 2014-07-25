@@ -1,25 +1,74 @@
 from Atributo import Atributo
 
 class GeneradorGenerico():
-	def __init__(self, plantilla, tipo=None, plantillaGrupo=""):
+
+	def __init__(self, plantilla="", tipo=None, plantillaGrupo="",plantilla2=""):
 		self.plantilla = plantilla
+		self.plantilla3 = plantilla
+		self.plantilla2 = plantilla2
 		self.tipo = tipo
 		self.grupo = False
+		self.bootstrap2 = False
 		self.plantillaGrupo = plantillaGrupo
 
-	def genararTwig(self,atributo):
+	def generarTwig(self,atributo):
 		if self.grupo and self.plantillaGrupo != "":
 			return self.generarGrupo(atributo)
 		else:
-			return self.generar(atributo)
+			if self.bootstrap2:
+				return self.generar2(atributo)
+			else:
+				return self.generar(atributo)
+
 
 	def generarGrupo(self, atributo):
-		pass
+		pass #serviria como interfaz
+
+	def generar2(self, atributo):
+		pass  #serviria como interfaz
 
 	def generar(self,atributo):
 		pass #serviria como interfaz
 
+class GeneradorDefault(GeneradorGenerico):
+
+	def __init__(self):
+		plantilla = """
+<div class="">	
+    <label>
+      <input type=""> {{ form_label(field, '%s'|trans, { label_attr: { class: 'control-label' } }) }}
+    </label>
+</div>"""
+
+		plantilla2 = """
+	{%% set field = form.%s %%}        
+        <div class="control-group">
+            {{ form_label(field, '%s'|trans, { label_attr: { class: 'control-label' } }) }}
+            <div class="controls">
+                {{ form_widget(field, { attr: { class: 'span6' } }) }}
+                {{ form_errors(field) }}
+            </div>
+        </div>"""
+
+		plantillaGrupo = """
+    {%% set field = form.%s %%}
+    <label class="-inline">
+        {{ form_widget(field) }} {{ '%s'|trans }}
+    </label>"""
+
+		GeneradorGenerico.__init__(self, plantilla, 'default', plantillaGrupo)
+
+	def generar(self,atributo):
+		return self.plantilla % (atributo.getPathTraductor())
+
+	def generar2(self,atributo):
+		return self.plantilla2 % (atributo.nombre, atributo.getPathTraductor())
+
+	def generarGrupo(self,atributo):
+		return self.plantillaGrupo % (atributo.nombre)
+
 class GeneradorBooleano(GeneradorGenerico):
+
 	def __init__(self):
 		plantilla = """
 <div class="checkbox">	
@@ -38,6 +87,9 @@ class GeneradorBooleano(GeneradorGenerico):
 
 	def generar(self, atributo):
 		return self.plantilla % (atributo.getPathTraductor())
+
+	def generaGrupo(self,atributo):
+		return self.plantillaGrupo % (atributo.nombre, atributo.getPathTraductor)
 
 class GeneradorText(GeneradorGenerico):
 	
@@ -66,6 +118,15 @@ class GeneradorString(GeneradorGenerico):
         {{ form_errors(field) }}
     </div>
 </div>"""
+		plantilla2 ="""
+<div class="control-group">
+    {{ form_label(field, '%s'|trans, { label_attr: { class: 'control-label' } }) }}
+    <div class="controls">
+        {{ form_widget(field, { attr: { class: 'span12' } }) }}
+        {{ form_errors(field) }}
+    </div>
+</div>     
+		"""
 		GeneradorGenerico.__init__(self, plantilla, 'string')
 
 	def generar(self, atributo):

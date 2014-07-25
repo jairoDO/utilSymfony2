@@ -12,7 +12,7 @@ class Atributo():
 		if propiedad in self.propiedades:
 			return self.propiedades[propiedad]
 		else:
-			return False
+			return 'default'
 
 	def getPathTraductor(self):
 		return self.get('pathTraductor') + '.' + self.nombre

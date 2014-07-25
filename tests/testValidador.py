@@ -6,7 +6,7 @@ import sys
 
 sys.path.append('../')
 from Parseador import Parseador
-from Validador import ValidadorEntradaArchivo
+from Validador import ValidadorEntradaArchivo, ValidadorGenerico
 
 class TestValidadorGenerico(unittest.TestCase):
 	def setUp(self):

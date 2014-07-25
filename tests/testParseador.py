@@ -4,6 +4,7 @@ import sys
 
 sys.path.append('../')
 from Parseador import Parseador, ProcesadorTipo, ProcesadorGenerico
+from Validador import *
 from Atributo import Atributo
 
 class TddParseador(unittest.TestCase):

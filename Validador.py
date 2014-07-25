@@ -49,7 +49,7 @@ class ValidadorGenerico():
 	def sonParametrosCorrectos(self,argv):
 		try:
 			optsTuple, args = getopt.getopt(argv , '' , [str(x) + '=' for x in self.opciones] + [str(x) for x in self.banderas])
-			self.optsTuple 
+			self.optsTuple = optsTuple
 		except:
 			self.error = True
 			self.mensajes.append('Existen opciones no válidas')
