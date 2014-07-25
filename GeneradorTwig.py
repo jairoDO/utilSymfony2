@@ -1,10 +1,20 @@
 from Atributo import Atributo
 
 class GeneradorGenerico():
-	def __init__(self, plantilla,tipo=None, grupo=False):
+	def __init__(self, plantilla, tipo=None, plantillaGrupo=""):
 		self.plantilla = plantilla
 		self.tipo = tipo
-		self.grupo = grupo
+		self.grupo = False
+		self.plantillaGrupo = plantillaGrupo
+
+	def genararTwig(self,atributo):
+		if self.grupo and self.plantillaGrupo != "":
+			return self.generarGrupo(atributo)
+		else:
+			return self.generar(atributo)
+
+	def generarGrupo(self, atributo):
+		pass
 
 	def generar(self,atributo):
 		pass #serviria como interfaz
@@ -12,11 +22,18 @@ class GeneradorGenerico():
 class GeneradorBooleano(GeneradorGenerico):
 	def __init__(self):
 		plantilla = """
-<div class="checkbox">
+<div class="checkbox">	
     <label>
       <input type="checkbox"> {{ form_label(field, '%s'|trans, { label_attr: { class: 'control-label' } }) }}
     </label>
 </div>"""
+
+		self.plantillaGrupo = """
+        {%% set field = form.%s %%}
+        <label class="checkbox-inline">
+            {{ form_widget(field) }} {{ '%s'|trans }}
+        </label>"""
+
 		GeneradorGenerico.__init__(self, plantilla, 'boolean')
 
 	def generar(self, atributo):
@@ -76,32 +93,18 @@ class GeneradorDecimal(GeneradorGenerico):
 	def generar(self, atributo):
 		return self.plantilla % (atributo.getPathTraductor())
 
-class GeneradorBooleanoGrupo(GeneradorGenerico):
-
+class GeneradorGrupo():
 	def __init__(self):
-		plantilla = """
-        {%% set field = form.%s %%}
-        <label class="checkbox-inline">
-            {{ form_widget(field) }} {{ '%s'|trans }}
-        </label>"""
-
 		self.plantillaGrupo = """
 <div class="form-group">
     <label class="col-lg-2 control-label">{{ '%s'|trans }}</label>
     <div class="col-lg-10">%s
     </div>
 </div>
-"""        
-		GeneradorGenerico.__init__(self, plantilla, 'boolean', True)
+""" 
 
-	def generarBase(self, atributo):
-		return self.plantilla % (atributo.nombre, atributo.getPathTraductor())
-
-	def generar(self, nombre, listaAtributo):
-		generados = ""
-		for atributo in listaAtributo:
-			generados +=  self.generarBase(atributo)
-
+	def generar(self, nombre):
+		generados = "%s"
 		return self.plantillaGrupo % (nombre, generados)
 
 class GeneradorTwig():
