@@ -4,7 +4,6 @@ class GeneradorGenerico():
 
 	def __init__(self, plantilla="", tipo=None, plantillaGrupo="",plantilla2=""):
 		self.plantilla = plantilla
-		self.plantilla3 = plantilla
 		self.plantilla2 = plantilla2
 		self.tipo = tipo
 		self.grupo = False
@@ -41,7 +40,6 @@ class GeneradorDefault(GeneradorGenerico):
 </div>"""
 
 		plantilla2 = """
-	{%% set field = form.%s %%}        
         <div class="control-group">
             {{ form_label(field, '%s'|trans, { label_attr: { class: 'control-label' } }) }}
             <div class="controls">
@@ -56,13 +54,13 @@ class GeneradorDefault(GeneradorGenerico):
         {{ form_widget(field) }} {{ '%s'|trans }}
     </label>"""
 
-		GeneradorGenerico.__init__(self, plantilla, 'default', plantillaGrupo)
+		GeneradorGenerico.__init__(self, plantilla, 'default', plantillaGrupo, plantilla2)
 
 	def generar(self,atributo):
 		return self.plantilla % (atributo.getPathTraductor())
 
 	def generar2(self,atributo):
-		return self.plantilla2 % (atributo.nombre, atributo.getPathTraductor())
+		return self.plantilla2 % (atributo.getPathTraductor())
 
 	def generarGrupo(self,atributo):
 		return self.plantillaGrupo % (atributo.nombre)
@@ -102,7 +100,17 @@ class GeneradorText(GeneradorGenerico):
         {{ form_errors(field) }}
     </div>
 </div>"""
-		GeneradorGenerico.__init__(self, plantilla, 'text')
+		
+		plantilla2 = """
+<div class="control-group">
+    {{ form_label(field, '%s'|trans, { label_attr: { class: 'control-label' } }) }}
+    <div class="controls">
+        {{ form_widget(field, { attr: { class: 'span12', rows: 8 } }) }}
+        {{ form_errors(field) }}
+    </div>
+</div>
+"""
+		GeneradorGenerico.__init__(self, plantilla, 'text',"", plantilla2)
 
 	def generar(self, atributo):
 		return self.plantilla % (atributo.getPathTraductor())
@@ -154,6 +162,51 @@ class GeneradorDecimal(GeneradorGenerico):
 	def generar(self, atributo):
 		return self.plantilla % (atributo.getPathTraductor())
 
+class GeneradorDatetime(GeneradorGenerico):
+	def __init__(self):
+		plantilla = """
+<div class="control-group">
+    {{ form_label(field, '%s'| trans, { label_attr: { class: 'control-label' } }) }}
+    <div class="controls">
+        {{ form_widget(field['day'], { attr: { class: 'span2' } }) }}
+        {{ form_widget(field['month'], { attr: { class: 'span2' } }) }}            
+        {{ form_widget(field['year'], { attr: { class: 'span2' } }) }}            
+        {{ form_errors(field) }}
+    </div>
+</div>"""
+
+		GeneradorGenerico.__init__(self, plantilla , 'datetime', "", plantilla)
+
+	def generar(self, atributo):
+		return self.plantilla % (atributo.getPathTraductor())
+
+	def generar2(self, atributo):
+		return self.plantilla2  % (atributo.getPathTraductor())
+
+class GeneradorImage(GeneradorGenerico):
+	def __init__(self):
+		plantilla = """
+<div class="control-group">
+    {{ form_label(field, '%s'|trans, { label_attr: { class: 'control-label' } }) }}
+    <div class="controls">
+        {%% if form.vars.value.%s %%}
+            <img class="img-polaroid" src="{{ ('uploads/%s/'~form.vars.value.%s)|imagine_filter('small') }}" />
+            <label class="checkbox">{{ form_widget(form.%sDelete) }} 'abm.accion.eliminar'|trans </label>
+        {%% endif %%}
+        {{ form_widget(field) }}
+        {{ form_errors(field) }}
+    </div>
+</div>"""
+		
+		GeneradorGenerico.__init__(self, plantilla , 'image', "", plantilla)
+
+	def generar(self, atributo):
+		return self.plantilla % (atributo.getPathTraductor(), atributo.nombre, atributo.propiedades['archivo'], atributo.nombre, atributo.nombre)
+
+	def generar2(self, atributo):
+		return self.plantilla2 % (atributo.getPathTraductor(), atributo.nombre, atributo.archivo, atributo.nombre, atributo.nombre)
+
+
 class GeneradorGrupo():
 	def __init__(self):
 		self.plantillaGrupo = """
@@ -167,6 +220,7 @@ class GeneradorGrupo():
 	def generar(self, nombre):
 		generados = "%s"
 		return self.plantillaGrupo % (nombre, generados)
+
 
 class GeneradorTwig():
 	pass

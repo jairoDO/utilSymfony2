@@ -101,6 +101,23 @@ class TddGenerarTwig(unittest.TestCase):
 	
 		self.failUnlessEqual(resultado,GeneradorDecimal().generar(atributo))
 
+	def test_generarTwigDatetime(self):
+		atributo = Atributo('fecha')
+		atributo.agregarPropiedad('tipo','datetime')
+		atributo.agregarPropiedad('pathTraductor', 'entidad.capacitacion.aval.form.label')
+		resultado = """
+<div class="control-group">
+    {{ form_label(field, 'entidad.capacitacion.aval.form.label'| trans, { label_attr: { class: 'control-label' } }) }}
+    <div class="controls">
+        {{ form_widget(field['day'], { attr: { class: 'span2' } }) }}
+        {{ form_widget(field['month'], { attr: { class: 'span2' } }) }}            
+        {{ form_widget(field['year'], { attr: { class: 'span2' } }) }}            
+        {{ form_errors(field) }}
+    </div>
+</div>"""		
+		
+		self.failUnlessEqual(resultado,GeneradorDatetime().generar(atributo))
+
 	def test_generarTwigAtributoBooleanoGrupo_simple(self):
 		atributo = Atributo('esAlgunaPropiedad')
 		atributo.agregarPropiedad('tipo','boolean')
@@ -112,6 +129,28 @@ class TddGenerarTwig(unittest.TestCase):
         </label>"""
 
 		self.failUnlessEqual(resultado, GeneradorBooleanoGrupo().generarBase(atributo))
+
+
+	def test_generarTwigAtributoImage(self):
+		atributo = Atributo('foto')
+		atributo.agregarPropiedad('tipo','image')
+		atributo.agregarPropiedad('pathTraductor','entidad.institucion.aval.form.label')
+		atributo.agregarPropiedad('archivo','Institucion')
+
+		resultado = """
+<div class="control-group">
+    {{ form_label(field, 'entidad.institucion.aval.form.label'|trans, { label_attr: { class: 'control-label' } }) }}
+    <div class="controls">
+        {%% if form.vars.value.foto %%}
+            <img class="img-polaroid" src="{{ ('uploads/Institucion/'~form.vars.value.foto)|imagine_filter('small') }}" />
+            <label class="checkbox">{{ form_widget(form.fotoDelete) }} 'abm.accion.eliminar'|trans </label>
+        {%% endif %%}
+        {{ form_widget(field) }}
+        {{ form_errors(field) }}
+    </div>
+</div>"""
+	
+		self.failUnlessEqual(resultado, GeneradorImage().generar(atributo))
 
 	def test_generarTwigAtributoBooleanoGrupo(self):
 		atributo = Atributo('esAlgunaPropiedad')
@@ -138,6 +177,7 @@ class TddGenerarTwig(unittest.TestCase):
 </div>
 """		
 		self.failUnlessEqual(resultado[570:], GeneradorBooleanoGrupo().generar('admin.certificado._form.destinado_a',lista)[570:])
+
 #	def test_imprimir_checbox(self):
 #		atributo
 if __name__ == "__main__":

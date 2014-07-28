@@ -11,8 +11,11 @@ class ProcesadorGenerico():
 	def __init__(self,patron,propiedad,opcion=None):
 		if opcion is None:
 			self.patron = re.compile(patron, re.MULTILINE | re.DOTALL)
+		elif not opcion:
+			self.patron = re.compile(patron)
 		else:
-			self.patron = re.compile(patron,opcion)
+			self.patron = re.compile(patron, opcion)
+
 		self.propiedad = propiedad
 		self.opcion = opcion
 		self.procesado = None
@@ -39,7 +42,18 @@ class ProcesadorGenerico():
 		pass
 
 	def getPropiedad():
-		return self.propiedades
+		return self.propiedad
+
+class ProcesadorImage(ProcesadorGenerico):
+	def __init__(self):
+		ProcesadorGenerico.__init__(self, "(.*)@Assert(.)Image(.*)", 'tipo')
+
+	def devolverProcesado(self):
+		if self.procesado is None:
+			return None
+		else:
+			return "image"
+
 
 class ProcesadorTipo(ProcesadorGenerico):
 	def __init__(self):
@@ -49,13 +63,15 @@ class ProcesadorTipo(ProcesadorGenerico):
 		if self.procesado is None:
 			return None
 		else:
+			if len(self.procesado) == 2:
+				return 'Image'
 			posicionfinal = self.procesado[1].find('"') if self.procesado[1].find('"') != -1  else len(self.procesado[1])
 			return self.procesado[1][0:posicionfinal]
 
 class Parseador():
 	atributos = []
 	def __init__(self, name_file = ''):
-		self.procesadores = [ProcesadorTipo()]
+		self.procesadores = [ProcesadorTipo(), ProcesadorImage()]
 		if os.path.exists(name_file) :
 			self.file = open(name_file,'rw')
 			self.fileString = self.file.read()

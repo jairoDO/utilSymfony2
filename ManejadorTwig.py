@@ -1,5 +1,6 @@
 from GeneradorTwig import *
 import os
+import re
 
 class ManejadorTwig():
 	def __init__(self):
@@ -10,18 +11,39 @@ class ManejadorTwig():
 		self.generadores['decimal'] = GeneradorDecimal()
 		self.generadores['text'] = GeneradorText()
 		self.generadores['string'] = GeneradorString()
+		self.generadores['datetime'] = GeneradorDatetime()
 		self.generadores['default'] = GeneradorDefault()
 		self.generadorGrupo = GeneradorGrupo()
 		self.mensajes = []
+		self.parsearValor = re.compile('(?P<indice>\d+)$|(?P<rangoInferior>\d+)..(?P<rangoSuperior>\d+)')
 
 	def imprimirError(self, error):
 		print error
 
+	def parsearValorInput(self, inputString):
+		result = []
+		for x in inputString.split(','):
+			dictGrupo = self.parsearValor.match(x.strip()).groupdict()
+			if dictGrupo['indice'] is None:
+				listaRango = range(int(dictGrupo['rangoInferior']), int(dictGrupo['rangoSuperior']) + 1)
+				result += listaRango 
+			else:
+				result.append(x.strip())
+		return result
+
 	def validarEntradaAtributo(self, inputs):
 		keys = inputs.split(',')
 		for indice in keys:
-			if not (indice.isdigit() or int(indice) <= len(self.atributos)):
+			matcher = self.parsearValor.match(indice)
+			if (matcher is None) :
 				return False
+			else:
+				dictGrupo = matcher.groupdict()
+				if not (dictGrupo['rangoSuperior'] is None) and int(dictGrupo['rangoSuperior']) + 1 > len(self.atributos):
+					return False
+				elif (not (dictGrupo['indice'] is None)) and int(dictGrupo['indice']) > len(self.atributos):
+					return False
+
 		return True
 
 	def crearGrupo(self,nombre, inputs):
@@ -33,7 +55,8 @@ class ManejadorTwig():
 	def agregarAtibutosAPropocesar(self):
 		inputs = raw_input('Ingrese un indice o los indices seguido por coma ejemplo 1, 2, 3, 5\n\n')
 		if self.validarEntradaAtributo(inputs):
-			for key in inputs.split(','):
+			for key in self.parsearValorInput(inputs):
+				#import pdb;pdb.set_trace()
 				self.atributosAProcesar.append(self.atributos[int(key)])
 		else:
 			self.imprimirError('Alguno de los indice no son correctos')
@@ -50,8 +73,8 @@ class ManejadorTwig():
 	def mostrarAtributos(self):
 		result = ''
 		for indice, atributo in enumerate(self.atributos):
-			result += "%s - %s : prop:%s" % (indice, atributo.nombre,str(atributo.propiedades))
-		return result
+			result += "%s - %s : prop:%s\n" % (indice, atributo.nombre,str(atributo.propiedades))
+		print result
 
 	def generarTodo(self):
 		os.system('clear')
