@@ -14,8 +14,20 @@ class Atributo():
 		else:
 			return 'default'
 
+	def setPathTraductor(self, path):
+		if not path:
+			pass
+		else:
+			self.propiedades['pathTraductor'] = path
+
 	def getPathTraductor(self):
-		return self.get('pathTraductor') + '.' + self.nombre
+		return self.get('pathTraductor') + '.' + self.getNombre()
+	
+	def getNombre(self):
+		if self.get('tipo') == 'image':
+			return self.nombre.partition('File')[0]
+
+		return self.nombre
 
 	def __str__(self):
 		result = "Nombre:" + self.nombre + '\n'

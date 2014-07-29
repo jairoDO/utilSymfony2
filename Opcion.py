@@ -9,4 +9,4 @@ class Opcion():
 		return self.nombre
 
 	def imprimir(self):
-		print "%s ) - %s" % (self.nombre, self.descripcion)
+		return "%s ) - %s" % (self.nombre, self.descripcion)

@@ -1,4 +1,6 @@
+# -*- encoding: utf-8 -*-
 from GeneradorTwig import *
+import Interfaz
 import os
 import re
 
@@ -13,12 +15,20 @@ class ManejadorTwig():
 		self.generadores['string'] = GeneradorString()
 		self.generadores['datetime'] = GeneradorDatetime()
 		self.generadores['default'] = GeneradorDefault()
+		self.generadores['image'] = GeneradorImage()
 		self.generadorGrupo = GeneradorGrupo()
+		self.path = None
 		self.mensajes = []
+		self.versionBootstap = 2
 		self.parsearValor = re.compile('(?P<indice>\d+)$|(?P<rangoInferior>\d+)..(?P<rangoSuperior>\d+)')
 
 	def imprimirError(self, error):
 		print error
+
+	def cambiarBootstrap(self):
+		versionAnterior = self.versionBootstap
+		self.versionBootstap = 2 + (self.versionBootstap +1) % 2 
+		Interfaz.info('Se cambio de la version:%i por la version:%i' % (versionAnterior, self.versionBootstap))
 
 	def parsearValorInput(self, inputString):
 		result = []
@@ -79,15 +89,10 @@ class ManejadorTwig():
 	def generarTodo(self):
 		os.system('clear')
 		result = ""
-		import pdb;pdb.set_trace()
-		for atributoTwig in self.atributos:
-			generador = self.getGenerador(atributoTwig.get('tipo'))
-			generador.grupo = False
-			result += "\n{%% set field = form.%s %%}" % atributoTwig.nombre
-			result += generador.generarTwig(atributoTwig) + '\n'
-		print '\n'*5
-		print result
-		print '\n'*5
+		salvarProcesar = [x for x in self.atributosAProcesar]
+		self.atributosAProcesar = [x for x in self.atributos]
+		self.generarTwig()
+		self.atributosAProcesar = salvarProcesar
 
 	def mostrarAGenerar(self):
 		os.system('clear')
@@ -103,18 +108,47 @@ class ManejadorTwig():
 
 	def getGenerador(self,key):
 		if key in self.generadores.keys():
-			return self.generadores[key]
+			generador = self.generadores[key]
 		else:
-			return self.generadores['default']
+			generador =  self.generadores['default']
+
+		if self.versionBootstap == 2:
+			generador.bootstrap2 = True
+		else:
+			generador.bootstrap2 = False
+
+		return generador
+
+	def eliminarAtributosAsociadosImagen(self, atributoImage):
+		nombre = atributoImage.nombre.partition('File')[0]
+		for atributo in self.atributosAProcesar:
+			if atributo.nombre.startswith(nombre) and atributo != atributoImage:
+				self.atributosAProcesar.remove(atributo)
+
+
+	def preProcesar(self):
+		for atributo in self.atributosAProcesar:
+			if atributo.get('tipo') == 'image':
+				atributo_imagen = atributo
+				self.eliminarAtributosAsociadosImagen(atributo)
+
+	def definirPath(self):
+		path = raw_input(Interfaz.buildColor('azul','Ingrese el nombre del path del traductor sin espacio en blanco. ejemplo:campus.modulos.aval.form\n'))
+		if (path.find(' ') != -1):
+			Interfaz.err('Ingresó con espacio')
+		else :
+			self.path = path
 
 	def generarTwig(self):
 		os.system('clear')
 		result = ""
+		self.preProcesar()
 		for atributoTwig in self.atributosAProcesar:
 			if isinstance(atributoTwig, tuple):
 				grupoStr = self.generadorGrupo.plantillaGrupo % atributoTwig[0]
 				grupos = ""
 				for atributo in atributoTwig[1]:
+					atributo.setPathTraductor(self.path)
 					generador = self.getGenerador(atributo.get('tipo'))
 					generador.grupo = True
 					grupos += generador.generar(atributo)
@@ -122,7 +156,8 @@ class ManejadorTwig():
 			else:
 				generador = self.getGenerador(atributoTwig.get('tipo'))
 				generador.grupo = False
+				atributoTwig.setPathTraductor(self.path)
 				result += "\n{%% set field = form.%s %%}" % atributoTwig.nombre
 				result += generador.generarTwig(atributoTwig) + '\n'
-		print result
+		Interfaz.infog(result)
 		return result

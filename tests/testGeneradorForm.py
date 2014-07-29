@@ -5,7 +5,11 @@ import sys
 sys.path.append('../')
 from GeneradorTwig import *
 from Atributo import Atributo
-#from ImpresorTwig import ImpresorTwig
+
+class TddGenerarForm(unittest.TestCase):
+
+	def setUp(self):				
+		self.generador = GeneradorForm()
 
 class TddGenerarTwig(unittest.TestCase):
 

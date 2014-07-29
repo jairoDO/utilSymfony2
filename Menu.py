@@ -1,5 +1,7 @@
+# -*- encoding: utf-8 -*-
 from Opcion import Opcion
 import os
+import Interfaz
 
 class Menu():
 	def __init__(self, objeto):
@@ -12,20 +14,21 @@ class Menu():
 
 	def salir(self):
 		self.debeCorrer = False
-		print ('\n..... bay.....\n')
+		Interfaz.infog('\n..... bay.....\n')
 
 
 	def imprimirMenu(self):
 		lista = self.dictOpciones.items()
 		lista.sort()
 		for opcion in lista:
-			opcion[1].imprimir()
+			Interfaz.cyan(opcion[1].imprimir())
+		Interfaz.info("Atributos parseados:%i A procesar:%i" % (len(self.objeto.atributos) -1, len(self.objeto.atributosAProcesar)))
 
 	def imprimirOpcionInvalida(self):
-		print 'Opcion Invalida'
+		Interfaz.err('Opcion Invalida')
 
 	def imprimirError(self,opcion):
-		print 'hubo un error al ejecutar ', self.dictOpciones[opcion].descripcion
+		Interfaz.err('hubo un error al ejecutar ' + self.dictOpciones[opcion].descripcion)
 
 	def correr(self):
 		self.debeCorrer = True
@@ -34,10 +37,7 @@ class Menu():
 			self.imprimirMenu()
 			print(mensaje)
 			opcion = str(raw_input('Ingrese alguna de las opciones\n\n'))
-			try:
-				mensaje = self.ejecutar(opcion)
-			except:
-				self.imprimirError(opcion)
+			self.ejecutar(opcion)
 
 	def getOpciones(self):
 		return self.opciones
@@ -50,7 +50,11 @@ class Menu():
 
 		if opcion in self.dictOpciones.keys():
 				opcion = self.dictOpciones[opcion]
-				exec(opcion.execs)
+				try:
+					exec(opcion.execs)
+				except Exception as inst:
+					import pdb;pdb.set_trace()
+					Interfaz.err(str(inst))
+
 		else:
-			self.mensaje.append('Opcion Invalida')
 			self.imprimirOpcionInvalida()
