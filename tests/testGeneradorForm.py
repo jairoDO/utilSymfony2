@@ -1,183 +1,161 @@
+# -*- coding: utf-8 *-*
 import unittest
 import os
 import sys
 
 sys.path.append('../')
-from GeneradorTwig import *
+from GeneradorForm import *
 from Atributo import Atributo
 
 class TddGenerarForm(unittest.TestCase):
 
-	def setUp(self):				
-		self.generador = GeneradorForm()
+	def test_generadorGenerico_generarOpcionString_vacio(self):
+		generador = GeneradorGenerico()
+		resultado = "array()"
+		self.failUnlessEqual(resultado, generador.generarOpcionString())
 
-class TddGenerarTwig(unittest.TestCase):
+	def test_generadorGenerico_generarOpcionString_con_required(self):
+		generador = GeneradorGenerico()
+		generador.opcion = {'required': True}
+		resultado = """array(
+				'required' => True,
+			)"""
+		self.failUnlessEqual(resultado, generador.generarOpcionString())
 
-	def setUp(self):				
-		self.generador = GeneradorTwig()
+	def test_generadorGenerico_generarOpcionString_empty_value(self):
+		generador = GeneradorGenerico()
+		generador.opcion = {'empty_value': ''}
+		resultado = """array(
+				'empty_value' => '',
+			)"""
+		self.failUnlessEqual(resultado, generador.generarOpcionString())
 
-	def test_generarTwigAtributo_boolean(self):
+	def test_generadorGenerico_generarOpcionString_con_required_y_max_length(self):
+		generador = GeneradorGenerico()
+		generador.opcion = {'required': True}
+		generador.opcion['max_length'] = 3
+		resultado = """array(
+				'max_length' => 3,
+				'required' => True,
+			)"""
+
+		self.failUnlessEqual(resultado, generador.generarOpcionString())
+
+	def test_generarTwigAtributo_boolean_requerido(self):
 		atributo = Atributo('tieneBeneficios')
 		atributo.agregarPropiedad('tipo' , 'boolean')
 		atributo.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
+		atributo.agregarPropiedad('required', True)
 		resultado = """
-<div class="checkbox">
-    <label>
-      <input type="checkbox"> {{ form_label(field, 'entidad.capacitacion.aval.form.label.tieneBeneficios'|trans, { label_attr: { class: 'control-label' } }) }}
-    </label>
-</div>"""
-		self.failUnlessEqual(resultado, GeneradorBooleano().generar(atributo))
+			->add('tieneBeneficios', 'checkbox', array(
+				'required' => True,
+			))"""
+
+		self.failUnlessEqual(resultado, GeneradorBooleano().generarForm(atributo))
+
+	def test_generarTwigAtributo_boolean_not_requerido(self):
+		atributo = Atributo('tieneBeneficios')
+		atributo.agregarPropiedad('tipo' , 'boolean')
+		atributo.agregarPropiedad('required', False)
+		resultado = """
+			->add('tieneBeneficios', 'checkbox', array(
+				'required' => False,
+			))"""
+
+		self.failUnlessEqual(resultado, GeneradorBooleano().generarForm(atributo))
+
 
 	def test_generarTwigAtributo_text(self):
 		atributo = Atributo('descripcion')
 		atributo.agregarPropiedad('tipo','text')
-		atributo.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
+		atributo.agregarPropiedad('required', False)
+
 		resultado = """
-<div class="form-group">
-    {{ form_label(field, 'entidad.capacitacion.aval.form.label.descripcion'|trans, { label_attr: {class: 'col-lg-2 control-label'} }) }}
-    <div class="col-lg-10">
-        {{ form_widget(field, { attr: {class: 'form-control'} }) }}
-        {{ form_errors(field) }}
-    </div>
-</div>"""
-		self.failUnlessEqual(resultado, GeneradorText().generar(atributo))
+			->add('descripcion', 'textarea', array(
+				'required' => False,
+			))"""
+
+		self.failUnlessEqual(resultado, GeneradorText().generarForm(atributo))
 
 	def test_generarTwigAtributo_string(self):
 		atributo = Atributo('nombre')
 		atributo.agregarPropiedad('tipo','string')
-		atributo.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
+		atributo.agregarPropiedad('required', False)
 		resultado = """
-<div class="form-group">
-    {{ form_label(field, 'entidad.capacitacion.aval.form.label.nombre'|trans, { label_attr: {class: 'col-lg-2 control-label'} }) }}
-    <div class="col-lg-10">
-        {{ form_widget(field, { attr: {class: 'form-control'} }) }}
-        {{ form_errors(field) }}
-    </div>
-</div>"""
-	
-		self.failUnlessEqual(resultado, GeneradorString().generar(atributo))
+			->add('nombre', 'text', array(
+				'required' => False,
+			))"""
+
+		self.failUnlessEqual(resultado, GeneradorString().generarForm(atributo))
 
 	def test_generarTwigAtributo_string_length_2(self):
 		atributo = Atributo('idioma')
 		atributo.agregarPropiedad('tipo','string')
 		atributo.agregarPropiedad('length', 2)
-		atributo.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
+		atributo.agregarPropiedad('required', False)
 		resultado = """
-<div class="form-group">
-    {{ form_label(field, 'entidad.capacitacion.aval.form.label.idioma'|trans, { label_attr: {class: 'col-lg-2 control-label'} }) }}
-    <div class="col-lg-2">
-        {{ form_widget(field, { attr: {class: 'form-control'} }) }}
-        {{ form_errors(field) }}
-    </div>
-</div>"""
+			->add('idioma', 'text', array(
+				'required' => False,
+			))"""
 	
-		self.failUnlessEqual(resultado, GeneradorString().generar(atributo))
+		self.failUnlessEqual(resultado, GeneradorString().generarForm(atributo))
 
 	def test_generarTwigAtributo_string_length_45(self):
 		atributo = Atributo('tipo')
 		atributo.agregarPropiedad('tipo','string')
 		atributo.agregarPropiedad('length', 45)
-		atributo.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
+		atributo.agregarPropiedad('required', False)
 		resultado = """
-<div class="form-group">
-    {{ form_label(field, 'entidad.capacitacion.aval.form.label.tipo'|trans, { label_attr: {class: 'col-lg-2 control-label'} }) }}
-    <div class="col-lg-2">
-        {{ form_widget(field, { attr: {class: 'form-control'} }) }}
-        {{ form_errors(field) }}
-    </div>
-</div>"""
+			->add('tipo', 'text', array(
+				'required' => False,
+			))"""
 	
-		self.failUnlessEqual(resultado, GeneradorString().generar(atributo))
+		self.failUnlessEqual(resultado, GeneradorString().generarForm(atributo))
 
 	def test_generarTwigAtributo_decimal(self):
 		atributo = Atributo('tipo')
 		atributo.agregarPropiedad('tipo','decimal')
 		atributo.agregarPropiedad('length', 45)
-		atributo.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
+		atributo.agregarPropiedad('required', False)
 		resultado = """
-<div class="form-group">
-    {{ form_label(field, 'entidad.capacitacion.aval.form.label.tipo'|trans, { label_attr: {class: 'col-lg-2 control-label'} }) }}
-    <div class="col-lg-2">
-        {{ form_widget(field, { attr: {class: 'form-control'} }) }}
-        {{ form_errors(field) }}
-    </div>
-</div>"""
+			->add('tipo', 'number', array(
+				'grouping' => True,
+				'presicion' => 3,
+				'required' => False,
+			))"""
 	
-		self.failUnlessEqual(resultado,GeneradorDecimal().generar(atributo))
+		self.failUnlessEqual(resultado,GeneradorDecimal().generarForm(atributo))
 
-	def test_generarTwigDatetime(self):
+	def test_generarTwigDate(self):
 		atributo = Atributo('fecha')
-		atributo.agregarPropiedad('tipo','datetime')
-		atributo.agregarPropiedad('pathTraductor', 'entidad.capacitacion.aval.form.label')
-		resultado = """
-<div class="control-group">
-    {{ form_label(field, 'entidad.capacitacion.aval.form.label.fecha'| trans, { label_attr: { class: 'control-label' } }) }}
-    <div class="controls">
-        {{ form_widget(field['day'], { attr: { class: 'span2' } }) }}
-        {{ form_widget(field['month'], { attr: { class: 'span2' } }) }}            
-        {{ form_widget(field['year'], { attr: { class: 'span2' } }) }}            
-        {{ form_errors(field) }}
-    </div>
-</div>"""		
+		atributo.agregarPropiedad('tipo','date')
+		atributo.agregarPropiedad('required', False)
 		
-		self.failUnlessEqual(resultado,GeneradorDatetime().generar(atributo))
+		resultado = """
+			->add('fecha', 'date', array(
+				'empty_value' => array('year' => 'Ano', 'month' => 'Mes', 'day' => 'Dia'),
+				'input' => 'datetime',
+				'required' => False,
+				'widget' => 'choice',
+				'years' => $years,
+			))"""		
+
+		self.failUnlessEqual(resultado,GeneradorDate().generarForm(atributo))
 
 	def test_generarTwigAtributoImage(self):
 		atributo = Atributo('fotoFile')
 		atributo.agregarPropiedad('tipo','image')
-		atributo.agregarPropiedad('pathTraductor','entidad.institucion.aval.form.label')
 		atributo.agregarPropiedad('archivo','Institucion')
-
+		atributo.agregarPropiedad('required', False)
 		resultado = """
-<div class="control-group">
-    {{ form_label(field, 'entidad.institucion.aval.form.label.foto'|trans, { label_attr: { class: 'control-label' } }) }}
-    <div class="controls">
-        {% if form.vars.value.foto %}
-            <img class="img-polaroid" src="{{ ('uploads/Institucion/'~form.vars.value.foto)|imagine_filter('small') }}" />
-            <label class="checkbox">{{ form_widget(form.fotoDelete) }} 'abm.accion.eliminar'|trans </label>
-        {% endif %}
-        {{ form_widget(field) }}
-        {{ form_errors(field) }}
-    </div>
-</div>"""
+			->add('fotoFile', null, array(
+				'required' => False,
+			))
+			->add('fotoDelete', 'checkbox', array(
+				'required' => False,
+			))"""
 	
-		self.failUnlessEqual(resultado, GeneradorImage().generar(atributo))
-
-	def test_generarTwigAtributoBooleanoGrupo(self):
-		atributo = Atributo('esAlgunaPropiedad')
-		atributo.agregarPropiedad('tipo','boolean')
-		atributo.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
-		atributo2 = Atributo('esOtraPropiedad')
-		atributo2.agregarPropiedad('tipo','boolean')
-		atributo2.agregarPropiedad('pathTraductor','entidad.capacitacion.aval.form.label')
-		lista = [atributo,atributo2]
-		generadorGrupo = GeneradorGrupo()
-		generadorBooleano = GeneradorBooleano()
-
-		aux = ""
-		for atributo in lista:
-			generadorBooleano.grupo = True
-			aux +=  generadorBooleano.generarTwig(atributo)
-		#import pdb;pdb.set_trace()
-		stringGenerado = generadorGrupo.plantillaGrupo % ('admin.certificado._form.destinado_a', aux)
-		"""print stringGenerado
-								print '\n\n'"""
-		resultado = """
-<div class="form-group">
-    <label class="col-lg-2 control-label">{{ 'admin.certificado._form.destinado_a'|trans }}</label>
-    <div class="col-lg-10">
-        {% set field = form.esAlgunaPropiedad %}
-        <label class="checkbox-inline">
-            {{ form_widget(field) }} {{ 'entidad.capacitacion.aval.form.label.esAlgunaPropiedad'|trans }}
-        </label>
-        {% set field = form.esOtraPropiedad %}
-        <label class="checkbox-inline">
-            {{ form_widget(field) }} {{ 'entidad.capacitacion.aval.form.label.esOtraPropiedad'|trans }}
-        </label>
-    </div>
-</div>
-"""		
-		self.failUnlessEqual(resultado, stringGenerado)
+		self.failUnlessEqual(resultado, GeneradorImage().generarForm(atributo))
 
 #	def test_imprimir_checbox(self):
 #		atributo

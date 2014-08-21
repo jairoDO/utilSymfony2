@@ -8,11 +8,11 @@ class Atributo():
 	def agregarPropiedad(self,key, propiedad):
 		self.propiedades[key] = propiedad
 
-	def get(self, propiedad):
+	def get(self, propiedad, default='default'):
 		if propiedad in self.propiedades:
 			return self.propiedades[propiedad]
 		else:
-			return 'default'
+			return default
 
 	def setPathTraductor(self, path):
 		if not path:

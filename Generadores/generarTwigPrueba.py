@@ -26,6 +26,10 @@ def main():
 		menu.agregarOpcion('t','self.objeto.generarTodo()','Genera twig para todo los atributos')
 		menu.agregarOpcion('cb','self.objeto.cambiarBootstrap()', 'Cambía la versíon de bootstrap con cual se van a generar twig')
 		menu.agregarOpcion('dp','self.objeto.definirPath()', 'Define el path base del traductor')
+		menu.agregarOpcion('gf','self.objeto.generarForm()', 'Genera el formBuilder')
+
+		manejador.clase = parseador.getClase(parseador.fileString)
+		manejador.namespace = parseador.getNameSpace(parseador.fileString)
 		manejador.atributos = parseador.getAtributosProcesados()
 		menu.correr()
 	else:

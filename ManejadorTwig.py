@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from GeneradorTwig import *
+from ManejadorForm import ManejadorForm
 import Interfaz
 import os
 import re
@@ -16,6 +17,7 @@ class ManejadorTwig():
 		self.generadores['datetime'] = GeneradorDatetime()
 		self.generadores['default'] = GeneradorDefault()
 		self.generadores['image'] = GeneradorImage()
+		self.manejadorForm = ManejadorForm()
 		self.generadorGrupo = GeneradorGrupo()
 		self.path = None
 		self.mensajes = []
@@ -161,3 +163,10 @@ class ManejadorTwig():
 				result += generador.generarTwig(atributoTwig) + '\n'
 		Interfaz.infog(result)
 		return result
+
+	def generarForm(self):
+		self.manejadorForm.atributosAProcesar = self.atributosAProcesar
+		self.manejadorForm.clase = self.clase
+		self.manejadorForm.namespace = self.namespace
+		Interfaz.infog(self.manejadorForm.generar())
+		return

@@ -16,7 +16,6 @@ class Menu():
 		self.debeCorrer = False
 		Interfaz.infog('\n..... bay.....\n')
 
-
 	def imprimirMenu(self):
 		lista = self.dictOpciones.items()
 		lista.sort()
@@ -53,7 +52,6 @@ class Menu():
 				try:
 					exec(opcion.execs)
 				except Exception as inst:
-					import pdb;pdb.set_trace()
 					Interfaz.err(str(inst))
 
 		else:

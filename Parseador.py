@@ -22,7 +22,6 @@ class ProcesadorGenerico():
 
 	def machea(self, string):
 		matcher = self.patron.match(string)
-		#import pdb;pdb.set_trace()
 		if matcher is None:
 			return False	
 			self.procesado = None
@@ -41,8 +40,69 @@ class ProcesadorGenerico():
 	def devolverProcesado(self):
 		pass
 
-	def getPropiedad():
+	def getPropiedad(self):
 		return self.propiedad
+
+class ProcesadorEntityTarget(ProcesadorGenerico):
+	def __init__(self):
+		ProcesadorGenerico.__init__(self, '(.*)targetEntity="(.*)"(.*)', 'targetEntity')
+
+	def devolverProcesado(self):
+		if self.procesado is None:
+			return False
+		else:
+			return self.procesado[1].split('"')[0]
+
+class ProcesadorMappedBy(ProcesadorGenerico):
+	def __init__(self):
+		ProcesadorGenerico.__init__(self, '(.*)mappedBy="(.*)"(.*)', 'mappedBy')
+
+	def devolverProcesado(self):
+		if self.procesado is None:
+			return False
+		else:
+			return self.procesado[1].split('"')[0]
+
+class ProcesadorCascade(ProcesadorGenerico):
+	def __init__(self):
+		ProcesadorGenerico.__init__(self, '(.*)cascade="\{(.*)\}"(.*)', 'cascade')
+
+	def devolverProcesado(self):
+		if self.procesado is None:
+			return False
+		else:
+			result = []
+			for prop in self.procesado[1].split(','):
+				result.append(prop.remove('"'))
+
+			return result
+
+class ProcesadorUnoAMucho(ProcesadorGenerico):
+	def __init__(self):
+		self.procesadores = [ProcesadorEntityTarget(), ProcesadorMappedBy()]
+		ProcesadorGenerico.__init__(self, "(.*)@ORM(.)OneToMany(.*)", 'OneToMany')
+
+	def devolverProcesado(self):
+		if self.procesado is None:
+			return False
+		else:
+			result = {}
+			for procesador in self.procesadores:
+				if procesador.machea(self.procesado[2]):
+					result[procesador.getPropiedad()] = procesador.devolverProcesado()
+
+			return result
+
+
+class ProcesadorNotBlank(ProcesadorGenerico):
+	def __init__(self):
+		ProcesadorGenerico.__init__(self, "(.*)@Assert(.)NotBlank(.*)", 'required')
+
+	def devolverProcesado(self):
+		if self.procesado is None:
+			return False
+		else:
+			return True
 
 class ProcesadorImage(ProcesadorGenerico):
 	def __init__(self):
