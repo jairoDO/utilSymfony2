@@ -139,6 +139,13 @@ class TddGenerarTwig(unittest.TestCase):
 	
 		self.failUnlessEqual(resultado, GeneradorImage().generar(atributo))
 
+	def test_generarTwigOneToMany(self):
+		atributo = Atributo('secciones')
+		atributo.agregarPropiedad('tipo','collection')
+		atributo.agregarPropiedad('pathTraductor','campus_admin.capacitacion.form.label')
+		atributo.agregarPropiedad('OneToMany', {'targetEntity': 'Gse\CampusBundle\Entity\Edicion\seccion', 'mappedBy': 'edicion', 'cascade' : ['persist', 'remove']})
+		print GeneradorOneToMany().generar(atributo)
+
 	def test_generarTwigAtributoBooleanoGrupo(self):
 		atributo = Atributo('esAlgunaPropiedad')
 		atributo.agregarPropiedad('tipo','boolean')

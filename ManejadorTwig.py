@@ -17,6 +17,7 @@ class ManejadorTwig():
 		self.generadores['datetime'] = GeneradorDatetime()
 		self.generadores['default'] = GeneradorDefault()
 		self.generadores['image'] = GeneradorImage()
+		self.generadores['OneToMany'] = GeneradorOneToMany()
 		self.manejadorForm = ManejadorForm()
 		self.generadorGrupo = GeneradorGrupo()
 		self.path = None
@@ -156,7 +157,10 @@ class ManejadorTwig():
 					grupos += generador.generar(atributo)
 				result += grupoStr % grupos
 			else:
-				generador = self.getGenerador(atributoTwig.get('tipo'))
+				if atributoTwig.get('OneToMany', False): 
+					generador = self.getGenerador('OneToMany')
+				else:
+					generador = self.getGenerador(atributoTwig.get('tipo'))
 				generador.grupo = False
 				atributoTwig.setPathTraductor(self.path)
 				result += "\n{%% set field = form.%s %%}" % atributoTwig.nombre

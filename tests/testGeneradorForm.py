@@ -157,6 +157,21 @@ class TddGenerarForm(unittest.TestCase):
 	
 		self.failUnlessEqual(resultado, GeneradorImage().generarForm(atributo))
 
+	def test_generarTwigAtributoCollection(self):
+		atributo = Atributo('miembros')
+		atributo.agregarPropiedad('OneToMany', {'targetEntity': 'Gse\MesaAyudaBundle\Entity\Departamento\Miembro', 'mappedBy': 'departamento', 'cascade' : ['persist', 'remove']})
+		atributo.agregarPropiedad('archivo','Institucion')
+		atributo.agregarPropiedad('required', False)
+		resultado = """
+			->add('miembros', 'collection', array(
+				'type' => new Gse\MesaAyudaBundle\Form\Departamento\MiembroType(),
+				'by_reference' => false,
+				'allow_delete' => true,
+				'allow_add' => true,
+			))"""
+	
+		self.failUnlessEqual(resultado, GeneradorOneToMany().generarForm(atributo))
+
 #	def test_imprimir_checbox(self):
 #		atributo
 if __name__ == "__main__":

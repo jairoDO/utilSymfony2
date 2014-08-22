@@ -215,8 +215,70 @@ class GeneradorImage(GeneradorGenerico):
 		return self.plantilla % (atributo.getPathTraductor(), atributo.getNombre(), atributo.propiedades['archivo'], atributo.getNombre(), atributo.getNombre())
 
 	def generar2(self, atributo):
-		return self.plantilla2 % (atributo.getPathTraductor(), atributo.getNombre(), atributo.propiedades['archivo'], atributo.getNombre(), atributo.getNombre())
+		return self.plantilla2 % (atributo.getPathTraductor(), atributo.getNombre(), atributo.propiedades['archivo'	], atributo.getNombre(), atributo.getNombre())
 
+class GeneradorOneToMany(GeneradorGenerico):
+	def __init__(self):
+		plantilla = """
+{# collection: %s #}
+<fieldset>
+    <legend>{{ '%slegend.%s'|trans }}</legend>
+
+    {{ form_errors(form.%s) }}
+
+    <div data-collection="%s" data-prototype="{{ _self.%s(form.%s.vars.prototype)|e }}">
+        {%% for %s in form.%s %%}
+            {{ _self.%s(%s) }}
+        {%% endfor %%}
+    </div>
+
+    <div class="form-group">
+        <div class="col-lg-offset-2 col-lg-10">
+            <button class="btn btn-default btn-sm" data-collection-add="%s">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+        </div>
+    </div>
+</fieldset>
+{# /collection: %s #}
+
+{# Macros #}
+{%% macro %s(%s) %%}
+    <div class="form-group">
+        {{ form_label(%s.%s, '%s%s'|trans, { label_attr: {class: 'col-lg-2 control-label'} }) }}
+        <div class="col-lg-10">
+            <div class="input-group">
+            	{{ form_widget(seccion.seccion, { attr: {class: 'form-control'} }) }}
+	            <span class="input-group-btn">
+		            <button class="btn btn-default" data-collection-del="%s" data-collection-parent-to-remove=".form-group">
+		                <span class="glyphicon glyphicon-minus"></span>
+		            </button>
+	            </span>
+            </div>
+            {{ form_errors(%s.%s) }}
+        </div>
+    </div>
+{%% endmacro %%}
+{# /Macros#}
+"""
+		GeneradorGenerico.__init__(self, plantilla, 'OneToMany',  plantilla)
+
+	def generar(self, atributo):
+		path  = atributo.getPathTraductor()
+		nombreCorto = self.getNombreSimple(atributo.get('OneToMany').get('targetEntity'))
+		pathLegend = self.getNombrelegend(path)
+		nombre = atributo.getNombre()
+		pathLabel = self.getPathLabel(path,nombre)
+		return self.plantilla % (nombre, pathLegend, nombre, nombre,nombre,nombre,nombre,nombreCorto,nombre,nombre,nombreCorto,nombre,nombre,nombre,nombreCorto,nombreCorto,nombreCorto,pathLabel,nombreCorto,nombre,nombreCorto,nombreCorto)
+
+	def getNombreSimple(self,nombre):
+		return nombre.split('\\')[-1].lower()
+
+	def getPathLabel(self, path,nombre):
+		return path.partition(nombre)[0]
+
+	def getNombrelegend(self,nombre):
+		return nombre.partition('label')[0]
 
 class GeneradorGrupo():
 	def __init__(self):

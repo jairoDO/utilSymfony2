@@ -65,7 +65,7 @@ class ProcesadorMappedBy(ProcesadorGenerico):
 
 class ProcesadorCascade(ProcesadorGenerico):
 	def __init__(self):
-		ProcesadorGenerico.__init__(self, '(.*)cascade="\{(.*)\}"(.*)', 'cascade')
+		ProcesadorGenerico.__init__(self, '(.*)cascade=\{(.*)\}(.*)', 'cascade')
 
 	def devolverProcesado(self):
 		if self.procesado is None:
@@ -73,13 +73,13 @@ class ProcesadorCascade(ProcesadorGenerico):
 		else:
 			result = []
 			for prop in self.procesado[1].split(','):
-				result.append(prop.remove('"'))
+				result.append(prop.replace('"','').strip())
 
 			return result
 
 class ProcesadorUnoAMucho(ProcesadorGenerico):
 	def __init__(self):
-		self.procesadores = [ProcesadorEntityTarget(), ProcesadorMappedBy()]
+		self.procesadores = [ProcesadorEntityTarget(), ProcesadorMappedBy(), ProcesadorCascade()]
 		ProcesadorGenerico.__init__(self, "(.*)@ORM(.)OneToMany(.*)", 'OneToMany')
 
 	def devolverProcesado(self):
@@ -131,7 +131,7 @@ class ProcesadorTipo(ProcesadorGenerico):
 class Parseador():
 	atributos = []
 	def __init__(self, name_file = ''):
-		self.procesadores = [ProcesadorTipo(), ProcesadorImage()]
+		self.procesadores = [ProcesadorTipo(), ProcesadorImage(), ProcesadorUnoAMucho()]
 		if os.path.exists(name_file) :
 			self.file = open(name_file,'rw')
 			self.fileString = self.file.read()
@@ -151,7 +151,7 @@ class Parseador():
 	def getClase(self,texto):
 		patronClass = re.compile("(.+)?class(\s)(.+)")
 		clas =  patronClass.search(texto)
-		clase =  clas.group(3)
+		clase =  clas.group(3).split()[0]
 		return clase
 
 

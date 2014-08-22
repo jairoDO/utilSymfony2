@@ -79,6 +79,29 @@ class GeneradorText(GeneradorGenerico):
 	def __init__(self):
 		GeneradorGenerico.__init__(self, 'text', 'textarea')
 
+class GeneradorOneToMany(GeneradorGenerico):
+	def __init__(self):
+		GeneradorGenerico.__init__(self, 'OneToMany', 'collection')
+
+	def procesarAtributo(self, atributo):
+		result = {}
+		if 'persist' in atributo.get('OneToMany').get('cascade', []):
+			result.update({'allow_add': False})
+		else:
+			result.update({'allow_add': False})
+
+		if 'remove' in atributo.get('OneToMany').get('cascade', []):
+			result.update({'allow_delete':True})
+		else:
+			result.update({'allow_add': False})
+
+		nombreType = atributo.get('OneToMany')['targetEntity'].replace('Entity','Form') + 'Type()'
+
+		result.update({'type': 'new ' + nombreType})
+		result.update({'by_reference': False})
+		result.update({'error_bubbling': False})
+		self.opcion.update(result)
+
 class GeneradorDecimal(GeneradorGenerico):
 	def __init__(self):
 		GeneradorGenerico.__init__(self,'decimal', 'number')

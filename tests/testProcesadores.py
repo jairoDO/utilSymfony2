@@ -84,10 +84,7 @@ class TddProcesadores(unittest.TestCase):
 		"""
 		procesador = ProcesadorUnoAMucho()
 		self.assertTrue(procesador.machea(anotacion))
-		expected = {'targetEntity': 'Gse\MesaAyudaBundle\Entity\Departamento\Miembro', 'mappedBy': 'departamento'}
-		import pdb; pdb.set_trace()
-		l = procesador.devolverProcesado()
-		print str(l)
+		expected = {'targetEntity': 'Gse\MesaAyudaBundle\Entity\Departamento\Miembro', 'mappedBy': 'departamento', 'cascade' : ['persist', 'remove']}
 		self.failUnlessEqual(expected, procesador.devolverProcesado())
 
 	def test_procesaar_targetEntity(self):
@@ -125,7 +122,6 @@ class TddProcesadores(unittest.TestCase):
      *  )
 		"""
 		procesador = ProcesadorCascade()
-
 		self.assertTrue(procesador.machea(anotacion))
 		self.failUnlessEqual(["persist", "remove"], procesador.devolverProcesado())		
 
