@@ -77,6 +77,22 @@ class ProcesadorCascade(ProcesadorGenerico):
 
 			return result
 
+class ProcesadorManyToOne(ProcesadorGenerico):
+	def __init__(self):
+		self.procesadores = [ProcesadorEntityTarget()]
+		ProcesadorGenerico.__init__(self, "(.*)@ORM(.)ManyToOne(.*)", 'ManyToOne')
+
+	def devolverProcesado(self):
+		if self.procesado is None:
+			return False
+		else:
+			result = {}
+			for procesador in self.procesadores:
+				if procesador.machea(self.procesado[2]):
+					result[procesador.getPropiedad()] = procesador.devolverProcesado()
+
+			return result
+
 class ProcesadorUnoAMucho(ProcesadorGenerico):
 	def __init__(self):
 		self.procesadores = [ProcesadorEntityTarget(), ProcesadorMappedBy(), ProcesadorCascade()]
@@ -131,7 +147,7 @@ class ProcesadorTipo(ProcesadorGenerico):
 class Parseador():
 	atributos = []
 	def __init__(self, name_file = ''):
-		self.procesadores = [ProcesadorTipo(), ProcesadorImage(), ProcesadorUnoAMucho()]
+		self.procesadores = [ProcesadorTipo(), ProcesadorImage(), ProcesadorUnoAMucho(), ProcesadorManyToOne()]
 		if os.path.exists(name_file) :
 			self.file = open(name_file,'rw')
 			self.fileString = self.file.read()

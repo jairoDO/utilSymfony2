@@ -17,6 +17,7 @@ class ManejadorForm():
 		self.generadores['default'] = GeneradorGenerico()
 		self.generadores['image'] = GeneradorImage()
 		self.generadores['OneToMany'] = GeneradorOneToMany()
+		self.generadores['ManyToOne'] = GeneradorManyToOne()
 		self.path = None
 		self.namespace = None
 		self.clase = None
@@ -82,10 +83,15 @@ class %sType extends AbstractType
 		else:
 			adds = ''
 			for atributo in self.atributosAProcesar:
-				if atributo.get('OneToMany',False) :
-					generador = self.getGenerador('OneToMany')
+				if atributo.nombre.lower() in ('id','translations', 'translationsproxy','create_at', 'update_at'):
+					pass
 				else:
-					generador = self.getGenerador(atributo.get('tipo'))
-				adds += generador.generarForm(atributo)
+					if atributo.get('OneToMany',False) :
+						generador = self.getGenerador('OneToMany')
+					elif atributo.get('ManyToOne',False) :
+						generador = self.getGenerador('ManyToOne')
+					else:
+						generador = self.getGenerador(atributo.get('tipo'))
+					adds += generador.generarForm(atributo)
 
 			return self.plantilla % (self.crearNameSpace(), self.clase, adds, self.namespace + '\\' + self.clase, self.crearNombre())

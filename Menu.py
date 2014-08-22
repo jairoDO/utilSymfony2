@@ -53,6 +53,5 @@ class Menu():
 					exec(opcion.execs)
 				except Exception as inst:
 					Interfaz.err(str(inst))
-
 		else:
 			self.imprimirOpcionInvalida()

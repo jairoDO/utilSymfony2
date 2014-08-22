@@ -3,7 +3,7 @@ import os
 import sys
 
 sys.path.append('../')
-from Parseador import Parseador, ProcesadorTipo, ProcesadorGenerico, ProcesadorImage, ProcesadorNotBlank, ProcesadorUnoAMucho, ProcesadorEntityTarget, ProcesadorMappedBy, ProcesadorCascade
+from Parseador import Parseador, ProcesadorTipo, ProcesadorGenerico, ProcesadorImage, ProcesadorNotBlank, ProcesadorUnoAMucho, ProcesadorEntityTarget, ProcesadorMappedBy, ProcesadorCascade, ProcesadorManyToOne
 from Validador import *
 from Atributo import Atributo
 
@@ -22,7 +22,6 @@ class TddProcesadores(unittest.TestCase):
 		procesador = ProcesadorImage()
 		self.assertTrue(procesador.machea(anotacion))
 		self.failUnlessEqual('image', procesador.devolverProcesado())		
-
 
 	def test_procesar_tipo_string(self):
 		anotacion = """
@@ -69,6 +68,21 @@ class TddProcesadores(unittest.TestCase):
 		procesador = ProcesadorNotBlank()
 		self.assertTrue(procesador.machea(anotacion))
 		self.failUnlessEqual( True, procesador.devolverProcesado())
+
+	def test_procesar_MuchoAUno(self):
+		anotacion = """
+  	/**
+     * @var Departamento
+     *
+     * @ORM\ManyToOne(targetEntity="Gse\MesaAyudaBundle\Entity\Departamento")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+		"""
+		
+		procesador = ProcesadorManyToOne()
+		self.assertTrue(procesador.machea(anotacion))
+		expected = {'targetEntity': 'Gse\MesaAyudaBundle\Entity\Departamento'}
+		self.failUnlessEqual(expected, procesador.devolverProcesado())
 
 	def test_procesar_unoAMucho(self):
 		anotacion = """

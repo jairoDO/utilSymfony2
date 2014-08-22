@@ -26,6 +26,10 @@ class GeneradorGenerico():
 		for key, value in lista:
 			if isinstance(value,str) and not value.startswith('array') and not value.startswith('$'):				
 				result.append("'%s' => '%s'," % (key, value))
+			elif isinstance(value,bool) and value:
+				result.append("'%s' => %s," % (key, 'true'))
+			elif isinstance(value,bool) and not value:
+				result.append("'%s' => %s," % (key, 'false'))
 			else:
 				result.append("'%s' => %s," % (key, value))
 
@@ -101,6 +105,40 @@ class GeneradorOneToMany(GeneradorGenerico):
 		result.update({'by_reference': False})
 		result.update({'error_bubbling': False})
 		self.opcion.update(result)
+
+class GeneradorManyToOne(GeneradorGenerico):
+	def __init__(self):
+		GeneradorGenerico.__init__(self, 'ManyToOne', 'autocomplete')
+
+	def procesarAtributo(self, atributo):
+		targetEntity = atributo.get('ManyToOne').get('targetEntity')
+		url = "$option['%s']" % (self.generarUrlAjax(targetEntity))
+		self.opcion.update({'class': targetEntity, 'reset_button': True, 'property': 'id', 'url': url, 'error_bubbling': False})
+
+	def generarUrlAjax(self, path):
+		nombreUrl = self.generarConGuionBajo(path.replace('\\Entity','').replace('\\','').replace('Bundle',''))
+		result = 'url_ajax_' + self.generarPlural(nombreUrl)
+		return result
+
+	def generarPlural(self,nombre):
+		if nombre[-1].lower() in 'aeiou':
+			return nombre + 's'
+		else:
+			return nombre + 'es'
+
+	def generarConGuionBajo(self, string):
+		result = []
+		anterior = 0
+		for i, x in enumerate(string):
+			if x.isupper():
+				result.append(string[anterior:i].lower())
+				anterior = i
+
+		result.append(string[anterior:].lower())
+		result.remove('')
+		if len(result) == 1:
+			return result[1]
+		return '_'.join(result)
 
 class GeneradorDecimal(GeneradorGenerico):
 	def __init__(self):

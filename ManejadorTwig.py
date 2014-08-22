@@ -157,14 +157,19 @@ class ManejadorTwig():
 					grupos += generador.generar(atributo)
 				result += grupoStr % grupos
 			else:
-				if atributoTwig.get('OneToMany', False): 
-					generador = self.getGenerador('OneToMany')
+				if atributoTwig.nombre.lower() in ('id','translations', 'translationsproxy','create_at', 'update_at'):
+					pass
 				else:
-					generador = self.getGenerador(atributoTwig.get('tipo'))
-				generador.grupo = False
-				atributoTwig.setPathTraductor(self.path)
-				result += "\n{%% set field = form.%s %%}" % atributoTwig.nombre
-				result += generador.generarTwig(atributoTwig) + '\n'
+					if atributoTwig.get('OneToMany', False): 
+						generador = self.getGenerador('OneToMany')
+					elif atributoTwig.get('ManyToOne', False): 
+						generador = self.getGenerador('ManyToOne')
+					else:
+						generador = self.getGenerador(atributoTwig.get('tipo'))
+					generador.grupo = False
+					atributoTwig.setPathTraductor(self.path)
+					result += "\n{%% set field = form.%s %%}" % atributoTwig.nombre
+					result += generador.generarTwig(atributoTwig) + '\n'
 		Interfaz.infog(result)
 		return result
 
@@ -174,3 +179,52 @@ class ManejadorTwig():
 		self.manejadorForm.namespace = self.namespace
 		Interfaz.infog(self.manejadorForm.generar())
 		return
+
+	def capitalizarConEspacios(self,string):
+		result = ''
+		for i, caracter in enumerate(string):
+			if caracter.isupper() and i!=0:
+				result += ' ' + caracter
+			else :
+				result += caracter
+		return result.title()
+
+	def generarConGuionBajo(self, string):
+		result = []
+		anterior = 0
+		for i, x in enumerate(string):
+			if x.isupper():
+				result.append(string[anterior:i].lower())
+				anterior = i
+
+		result.append(string[anterior:].lower())
+		if '' in result:
+			result.remove('')
+		if len(result) == 1:
+			return result[0]
+		return '_'.join(result)
+
+	def generarTraducciones(self):
+		tabulador = '  '
+
+		for i, x in enumerate(self.namespace.partition('\\Entity')[2].split('\\')):
+			if x != '':
+				tabulador = '  '*i
+				print '%s%s:' % (tabulador,self.generarConGuionBajo(x))
+		tabulador = '  '*(i+1)
+		print '%s%s:' % (tabulador,self.generarConGuionBajo(self.clase).lower())
+		muchoAUno= []
+		print '%s%s' % ('  '*(i+2), 'form:')
+		print '%s%s' % ('  '*(i+3), 'label:')
+
+		tabulador = '  ' * (i+4)
+		for atributo in self.atributosAProcesar:
+			if not atributo.nombre in ('id','createdBy','updatedBy','created','updated','translationsproxy', 'translations'):
+				if atributo.get('OneToMany', False):
+					muchoAUno.append(atributo)
+				else:
+					print tabulador + self.generarConGuionBajo(atributo.nombre) + ': ' + self.capitalizarConEspacios(atributo.nombre)
+		if len(muchoAUno) > 0:
+			print '%s%s' % ('  '* (i+3), 'legend:')
+		for atributo in muchoAUno:
+			print '%s%s: %s' % (tabulador, self.generarConGuionBajo(atributo.nombre), self.capitalizarConEspacios(atributo.nombre))
